@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary" id="navbar" style="display: none;">
+    <div class="container">
+        <a class="navbar-brand" href="#"><i class="fas fa-boxes"></i> Inventario</a>
+        <div class="navbar-nav ms-auto">
+            <span class="navbar-text me-3" id="usuario-info"></span>
+            <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Login Section -->
+<div class="container-fluid vh-100" id="login-section">
+    <div class="row h-100 justify-content-center align-items-center bg-light">
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-boxes fa-3x text-primary mb-3"></i>
+                        <h3>Sistema de Inventario</h3>
+                        <p class="text-muted">Ingresa tus credenciales</p>
+                    </div>
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                        </button>
+                    </form>
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            Demo: admin@inventario.com / admin123
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Application -->
+<div class="container-fluid" id="main-app" style="display: none;">
+
+    <!-- Dashboard Superior - Siempre visible -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+            <div class="row" id="dashboard-cards">
+                <!-- Dashboard cards will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="productos-tab" data-bs-toggle="tab" data-bs-target="#productos-content" type="button" role="tab">
+                        <i class="fas fa-box"></i> Productos
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="movimientos-tab" data-bs-toggle="tab" data-bs-target="#movimientos-content" type="button" role="tab">
+                        <i class="fas fa-exchange-alt"></i> Movimientos
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#reportes-content" type="button" role="tab">
+                        <i class="fas fa-chart-bar"></i> Reportes
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="categorias-tab" data-bs-toggle="tab" data-bs-target="#categorias-content" type="button" role="tab">
+                        <i class="fas fa-tags"></i> Categorías
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab Contents -->
+    <div class="tab-content mt-3" id="mainTabContent">
+
+        <!-- Products Content -->
+        <div class="tab-pane fade show active" id="productos-content" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3><i class="fas fa-box"></i> Gestión de Productos</h3>
+                <button class="btn btn-success" onclick="mostrarModalProducto()">
+                    <i class="fas fa-plus"></i> Nuevo Producto
+                </button>
+            </div>
+            <!-- Filters -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" id="buscar-producto" placeholder="Buscar producto...">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-control" id="filtro-categoria">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary" onclick="cargarProductos()">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+            <!-- Products Table -->
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productos-tabla">
+                        <!-- Products will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Movimientos Content -->
+        <div class="tab-pane fade" id="movimientos-content" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3><i class="fas fa-exchange-alt"></i> Movimientos de Inventario</h3>
+                <button class="btn btn-success" onclick="mostrarModalMovimiento()">
+                    <i class="fas fa-plus"></i> Registrar Movimiento
+                </button>
+            </div>
+            <!-- Filtros de Movimientos -->
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <select class="form-control" id="filtro-producto-mov">
+                        <option value="">Todos los productos</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-control" id="filtro-tipo-mov">
+                        <option value="">Todos los tipos</option>
+                        <option value="entrada">Entradas</option>
+                        <option value="salida">Salidas</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary" onclick="cargarMovimientos()">
+                        <i class="fas fa-search"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+            <!-- Tabla de Movimientos -->
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unit.</th>
+                            <th>Total</th>
+                            <th>Usuario</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="movimientos-tabla">
+                        <!-- Movements will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reportes Content -->
+        <div class="tab-pane fade" id="reportes-content" role="tabpanel">
+            <h3><i class="fas fa-chart-bar"></i> Reportes del Sistema</h3>
+            <div class="row">
+                <!-- Reporte de Stock Bajo -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-white">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Productos con Stock Bajo</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="stock-bajo-lista">
+                                <!-- Stock bajo items -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reporte de Productos Más Movidos -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5><i class="fas fa-chart-line"></i> Productos Más Movidos (30 días)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="productos-mas-movidos">
+                                <!-- Most moved products -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reporte de Movimientos Recientes -->
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5><i class="fas fa-clock"></i> Últimos Movimientos</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Producto</th>
+                                            <th>Tipo</th>
+                                            <th>Cantidad</th>
+                                            <th>Usuario</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ultimos-movimientos">
+                                        <!-- Recent movements -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categorías Content -->
+        <div class="tab-pane fade" id="categorias-content" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3><i class="fas fa-tags"></i> Gestión de Categorías</h3>
+                <button class="btn btn-success" onclick="mostrarModalCategoria()" id="btn-nueva-categoria" style="display: none;">
+                    <i class="fas fa-plus"></i> Nueva Categoría
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Fecha Creación</th>
+                            <th>Productos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categorias-tabla">
+                        <!-- Categories will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal para Movimiento -->
+<div class="modal fade" id="modalMovimiento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Movimiento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="movimiento-form">
+                    <div class="mb-3">
+                        <label class="form-label">Producto *</label>
+                        <select class="form-control" id="movimiento-producto" required>
+                            <option value="">Seleccionar producto...</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Movimiento *</label>
+                            <select class="form-control" id="movimiento-tipo" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="entrada">Entrada</option>
+                                <option value="salida">Salida</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cantidad *</label>
+                            <input type="number" class="form-control" id="movimiento-cantidad" min="1" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label">Precio Unitario</label>
+                        <input type="number" class="form-control" id="movimiento-precio" step="0.01" min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo *</label>
+                        <input type="text" class="form-control" id="movimiento-motivo" required placeholder="Ej: Compra, Venta, Ajuste, etc.">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="movimiento-observaciones" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarMovimiento()">Registrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Categoría -->
+<div class="modal fade" id="modalCategoria" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoria-form">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="categoria-nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" id="categoria-descripcion" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarCategoria()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Producto -->
+<div class="modal fade" id="modalProducto" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalProductoTitulo">Nuevo Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="producto-form">
+                    <input type="hidden" id="producto-id">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="producto-nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" id="producto-descripcion" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Categoría</label>
+                            <select class="form-control" id="producto-categoria">
+                                <option value="">Seleccionar...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Código</label>
+                            <input type="text" class="form-control" id="producto-codigo">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Precio *</label>
+                            <input type="number" class="form-control" id="producto-precio" step="0.01" min="0" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Stock Actual *</label>
+                            <input type="number" class="form-control" id="producto-stock" min="0" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Stock Mínimo</label>
+                            <input type="number" class="form-control" id="producto-stock-minimo" value="5" min="0">
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label">URL de Imagen</label>
+                        <input type="url" class="form-control" id="producto-imagen">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarProducto()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div class="d-none" id="loading">
+    <div class="d-flex justify-content-center align-items-center position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50" style="z-index: 9999;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-container"></div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- App JavaScript -->
+<script>
+// Configuración de la API
+const API_BASE_URL = 'http://localhost:5000/api';
+let authToken = localStorage.getItem('authToken');
+let currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+// Elementos del DOM
+const loginSection = document.getElementById('login-section');
+const mainApp = document.getElementById('main-app');
+const navbar = document.getElementById('navbar');
+const loginForm = document.getElementById('login-form');
+
+// Inicializar aplicación
+document.addEventListener('DOMContentLoaded', function() {
+    if (authToken && currentUser.id) {
+        mostrarApp();
+        cargarDashboard();
+        cargarCategorias();
+        cargarProductos();
+        cargarProductosParaMovimientos();
+
+        // Mostrar botón de nueva categoría solo para admins
+        if (currentUser.rol === 'admin') {
+            document.getElementById('btn-nueva-categoria').style.display = 'block';
+        }
+
+        // Event listeners para tabs
+        document.getElementById('movimientos-tab').addEventListener('click', () => {
+            cargarMovimientos();
+        });
+
+        document.getElementById('reportes-tab').addEventListener('click', () => {
+            cargarReportes();
+        });
+
+        document.getElementById('categorias-tab').addEventListener('click', () => {
+            cargarCategoriasDetalle();
+        });
+
+        document.getElementById('productos-tab').addEventListener('click', () => {
+            cargarProductos();
+        });
+
+    } else {
+        mostrarLogin();
+    }
+});
+
+// Login
+loginForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    mostrarLoading(true);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            authToken = data.token;
+            currentUser = data.usuario;
+            localStorage.setItem('authToken', authToken);
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            mostrarToast('Bienvenido al sistema', 'success');
+            mostrarApp();
+            cargarDashboard();
+            cargarCategorias();
+            cargarProductos();
+        } else {
+            mostrarToast(data.message || 'Error en el login', 'error');
+        }
+    } catch (error) {
+        console.error('Error en login:', error);
+        mostrarToast('Error de conexión', 'error');
+    } finally {
+        mostrarLoading(false);
+    }
+});
+
+// Mostrar secciones
+function mostrarLogin() {
+    loginSection.style.display = 'block';
+    mainApp.style.display = 'none';
+    navbar.style.display = 'none';
+}
+
+function mostrarApp() {
+    loginSection.style.display = 'none';
+    mainApp.style.display = 'block';
+    navbar.style.display = 'block';
+    document.getElementById('usuario-info').textContent = 
+        `${currentUser.nombre} (${currentUser.rol})`;
+}
+
+// Cerrar sesión
+function cerrarSesion() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    authToken = null;
+    currentUser = {};
+    mostrarLogin();
+    mostrarToast('Sesión cerrada', 'info');
+}
+
+// Cargar Dashboard - VERSIÓN SIMPLIFICADA
+async function cargarDashboard() {
+    try {
+        const response = await hacerPeticion('/dashboard');
+        const data = response.dashboard;
+
+        // Solo actualizar el dashboard superior
+        const dashboardCards = document.getElementById('dashboard-cards');
+        
+        if (dashboardCards) {
+            dashboardCards.innerHTML = `
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>${data.total_productos}</h4>
+                                    <p>Total Productos</p>
+                                </div>
+                                <i class="fas fa-box fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>${data.productos_stock_bajo}</h4>
+                                    <p>Stock Bajo</p>
+                                </div>
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>$${data.valor_total_inventario.toFixed(2)}</h4>
+                                    <p>Valor Total</p>
+                                </div>
+                                <i class="fas fa-dollar-sign fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>Online</h4>
+                                    <p>Sistema</p>
+                                </div>
+                                <i class="fas fa-server fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+    } catch (error) {
+        console.error('Error cargando dashboard:', error);
+        mostrarToast('Error al cargar el dashboard', 'error');
+    }
+}
+
+// Cargar Productos para Movimientos
+async function cargarProductosParaMovimientos() {
+    try {
+        const response = await hacerPeticion('/productos');
+        const productos = response.productos;
+
+        const selects = ['filtro-producto-mov', 'movimiento-producto'];
+        selects.forEach(selectId => {
+            const select = document.getElementById(selectId);
+            const defaultOption = select.querySelector('option[value=""]');
+            select.innerHTML = '';
+            if (defaultOption) select.appendChild(defaultOption);
+
+            productos.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod.id;
+                option.textContent = `${prod.nombre} (Stock: ${prod.stock_actual})`;
+                select.appendChild(option);
+            });
+        });
+
+    } catch (error) {
+        console.error('Error cargando productos para movimientos:', error);
+    }
+}
+
+// Cargar Movimientos
+async function cargarMovimientos() {
+    try {
+        const producto = document.getElementById('filtro-producto-mov').value;
+        const tipo = document.getElementById('filtro-tipo-mov').value;
+
+        let url = '/movimientos?limite=100';
+        if (producto) url += `&producto_id=${producto}`;
+        if (tipo) url += `&tipo=${tipo}`;
+
+        const response = await hacerPeticion(url);
+        const movimientos = response.movimientos;
+
+        const tbody = document.getElementById('movimientos-tabla');
+        tbody.innerHTML = '';
+
+        movimientos.forEach(mov => {
+            const fecha = new Date(mov.fecha_movimiento).toLocaleDateString();
+            const tipoClass = mov.tipo_movimiento === 'entrada' ? 'success' : 'danger';
+            const total = (mov.precio_unitario * mov.cantidad).toFixed(2);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${fecha}</td>
+                <td>${mov.producto_nombre}</td>
+                <td><span class="badge bg-${tipoClass}">${mov.tipo_movimiento.toUpperCase()}</span></td>
+                <td>${mov.cantidad}</td>
+                <td>${parseFloat(mov.precio_unitario || 0).toFixed(2)}</td>
+                <td>${total}</td>
+                <td>${mov.usuario_nombre}</td>
+                <td>${mov.motivo || '-'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error('Error cargando movimientos:', error);
+        mostrarToast('Error al cargar movimientos', 'error');
+    }
+}
+
+// Cargar Reportes
+async function cargarReportes() {
+    try {
+        // Productos con stock bajo
+        const stockBajo = await hacerPeticion('/productos?limite=100');
+        const productosStockBajo = stockBajo.productos.filter(p => p.stock_actual <= p.stock_minimo);
+
+        const stockBajoDiv = document.getElementById('stock-bajo-lista');
+        if (productosStockBajo.length === 0) {
+            stockBajoDiv.innerHTML = '<p class="text-muted">No hay productos con stock bajo</p>';
+        } else {
+            stockBajoDiv.innerHTML = productosStockBajo.map(p => `
+                <div class="alert alert-warning d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${p.nombre}</strong><br>
+                        <small>Stock actual: ${p.stock_actual} | Mínimo: ${p.stock_minimo}</small>
+                    </div>
+                    <span class="badge bg-warning">${p.stock_actual}</span>
+                </div>
+            `).join('');
+        }
+
+        // Últimos movimientos
+        const movimientos = await hacerPeticion('/movimientos?limite=10');
+        const tbody = document.getElementById('ultimos-movimientos');
+        tbody.innerHTML = '';
+
+        movimientos.movimientos.forEach(mov => {
+            const fecha = new Date(mov.fecha_movimiento).toLocaleDateString();
+            const tipoClass = mov.tipo_movimiento === 'entrada' ? 'success' : 'danger';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${fecha}</td>
+                <td>${mov.producto_nombre}</td>
+                <td><span class="badge bg-${tipoClass}">${mov.tipo_movimiento}</span></td>
+                <td>${mov.cantidad}</td>
+                <td>${mov.usuario_nombre}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error('Error cargando reportes:', error);
+    }
+}
+
+// Cargar Categorías Detalle
+async function cargarCategoriasDetalle() {
+    try {
+        const response = await hacerPeticion('/categorias');
+        const categorias = response.categorias;
+
+        const tbody = document.getElementById('categorias-tabla');
+        tbody.innerHTML = '';
+
+        for (const cat of categorias) {
+            // Contar productos por categoría
+            const prodResponse = await hacerPeticion(`/productos?categoria=${cat.id}`);
+            const cantidadProductos = prodResponse.productos.length;
+
+            const fecha = new Date(cat.fecha_creacion).toLocaleDateString();
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${cat.id}</td>
+                <td><strong>${cat.nombre}</strong></td>
+                <td>${cat.descripcion || '-'}</td>
+                <td>${fecha}</td>
+                <td><span class="badge bg-primary">${cantidadProductos}</span></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+    } catch (error) {
+        console.error('Error cargando categorías:', error);
+    }
+}
+
+// Modal Movimiento
+function mostrarModalMovimiento() {
+    const modal = new bootstrap.Modal(document.getElementById('modalMovimiento'));
+    document.getElementById('movimiento-form').reset();
+    modal.show();
+}
+
+// Guardar Movimiento - VERSIÓN CORREGIDA
+async function guardarMovimiento() {
+    const movimiento = {
+        producto_id: parseInt(document.getElementById('movimiento-producto').value),
+        tipo_movimiento: document.getElementById('movimiento-tipo').value,
+        cantidad: parseInt(document.getElementById('movimiento-cantidad').value),
+        precio_unitario: parseFloat(document.getElementById('movimiento-precio').value) || null,
+        motivo: document.getElementById('movimiento-motivo').value,
+        observaciones: document.getElementById('movimiento-observaciones').value || null
+    };
+
+    if (!movimiento.producto_id || !movimiento.tipo_movimiento || !movimiento.cantidad || !movimiento.motivo) {
+        mostrarToast('Complete todos los campos requeridos', 'error');
+        return;
+    }
+
+    try {
+        const response = await hacerPeticion('/movimientos', 'POST', movimiento);
+        mostrarToast(response.message, 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modalMovimiento')).hide();
+        
+        // Recargar TODAS las vistas afectadas
+        cargarMovimientos();
+        cargarProductos();
+        cargarProductosParaMovimientos();
+        cargarDashboard();
+
+    } catch (error) {
+        console.error('Error guardando movimiento:', error);
+        mostrarToast('Error al registrar movimiento', 'error');
+    }
+}
+
+// Modal Categoría
+function mostrarModalCategoria() {
+    const modal = new bootstrap.Modal(document.getElementById('modalCategoria'));
+    document.getElementById('categoria-form').reset();
+    modal.show();
+}
+
+// Guardar Categoría - VERSIÓN CORREGIDA
+async function guardarCategoria() {
+    const categoria = {
+        nombre: document.getElementById('categoria-nombre').value,
+        descripcion: document.getElementById('categoria-descripcion').value || null
+    };
+
+    if (!categoria.nombre) {
+        mostrarToast('El nombre de la categoría es requerido', 'error');
+        return;
+    }
+
+    try {
+        const response = await hacerPeticion('/categorias', 'POST', categoria);
+        mostrarToast(response.message, 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modalCategoria')).hide();
+        
+        // Recargar categorías en todos los selectores
+        cargarCategorias();
+        cargarCategoriasDetalle();
+
+    } catch (error) {
+        console.error('Error guardando categoría:', error);
+        mostrarToast('Error al crear categoría', 'error');
+    }
+}
+
+// Cargar Categorías
+async function cargarCategorias() {
+    try {
+        const response = await hacerPeticion('/categorias');
+        const categorias = response.categorias;
+
+        const selects = ['filtro-categoria', 'producto-categoria'];
+        selects.forEach(selectId => {
+            const select = document.getElementById(selectId);
+            const defaultOption = select.querySelector('option[value=""]');
+            select.innerHTML = '';
+            if (defaultOption) select.appendChild(defaultOption);
+
+            categorias.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.nombre;
+                select.appendChild(option);
+            });
+        });
+
+    } catch (error) {
+        console.error('Error cargando categorías:', error);
+    }
+}
+
+// Cargar Productos
+async function cargarProductos() {
+    try {
+        const buscar = document.getElementById('buscar-producto').value;
+        const categoria = document.getElementById('filtro-categoria').value;
+
+        let url = '/productos?';
+        if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+        if (categoria) url += `categoria=${categoria}&`;
+
+        const response = await hacerPeticion(url);
+        const productos = response.productos;
+
+        const tbody = document.getElementById('productos-tabla');
+        tbody.innerHTML = '';
+
+        productos.forEach(producto => {
+            const stockStatus = producto.stock_actual <= producto.stock_minimo ?
+                '<span class="badge bg-danger">Bajo</span>' :
+                '<span class="badge bg-success">Normal</span>';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${producto.codigo_producto || '-'}</td>
+                <td>${producto.nombre}</td>
+                <td>${producto.categoria_nombre || '-'}</td>
+                <td>${parseFloat(producto.precio).toFixed(2)}</td>
+                <td>${producto.stock_actual}</td>
+                <td>${stockStatus}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary me-1" onclick="editarProducto(${producto.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${producto.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error('Error cargando productos:', error);
+        mostrarToast('Error al cargar productos', 'error');
+    }
+}
+
+// Modal Producto
+function mostrarModalProducto(producto = null) {
+    const modal = new bootstrap.Modal(document.getElementById('modalProducto'));
+    const titulo = document.getElementById('modalProductoTitulo');
+    const form = document.getElementById('producto-form');
+
+    if (producto) {
+        titulo.textContent = 'Editar Producto';
+        document.getElementById('producto-id').value = producto.id;
+        document.getElementById('producto-nombre').value = producto.nombre;
+        document.getElementById('producto-descripcion').value = producto.descripcion || '';
+        document.getElementById('producto-categoria').value = producto.categoria_id || '';
+        document.getElementById('producto-codigo').value = producto.codigo_producto || '';
+        document.getElementById('producto-precio').value = producto.precio;
+        document.getElementById('producto-stock').value = producto.stock_actual;
+        document.getElementById('producto-stock-minimo').value = producto.stock_minimo;
+        document.getElementById('producto-imagen').value = producto.imagen_url || '';
+    } else {
+        titulo.textContent = 'Nuevo Producto';
+        form.reset();
+        document.getElementById('producto-id').value = '';
+    }
+
+    modal.show();
+}
+
+// Editar Producto
+async function editarProducto(id) {
+    try {
+        const response = await hacerPeticion(`/productos/${id}`);
+        mostrarModalProducto(response.producto);
+    } catch (error) {
+        console.error('Error cargando producto:', error);
+        mostrarToast('Error al cargar producto', 'error');
+    }
+}
+
+// Guardar Producto - VERSIÓN CORREGIDA
+async function guardarProducto() {
+    const form = document.getElementById('producto-form');
+    const formData = new FormData(form);
+
+    const producto = {
+        nombre: document.getElementById('producto-nombre').value,
+        descripcion: document.getElementById('producto-descripcion').value,
+        categoria_id: document.getElementById('producto-categoria').value || null,
+        codigo_producto: document.getElementById('producto-codigo').value || null,
+        precio: parseFloat(document.getElementById('producto-precio').value),
+        stock_actual: parseInt(document.getElementById('producto-stock').value),
+        stock_minimo: parseInt(document.getElementById('producto-stock-minimo').value),
+        imagen_url: document.getElementById('producto-imagen').value || null
+    };
+
+    try {
+        const id = document.getElementById('producto-id').value;
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/productos/${id}` : '/productos';
+
+        const response = await hacerPeticion(url, method, producto);
+
+        mostrarToast(response.message, 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
+        
+        // Recargar todas las vistas que muestran productos
+        cargarProductos();
+        cargarProductosParaMovimientos(); // LÍNEA CLAVE AGREGADA
+        cargarDashboard();
+
+    } catch (error) {
+        console.error('Error guardando producto:', error);
+        mostrarToast('Error al guardar producto', 'error');
+    }
+}
+
+// Eliminar Producto - VERSIÓN CORREGIDA
+async function eliminarProducto(id) {
+    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
+
+    try {
+        const response = await hacerPeticion(`/productos/${id}`, 'DELETE');
+        mostrarToast(response.message, 'success');
+        
+        // Recargar TODAS las vistas
+        cargarProductos();
+        cargarProductosParaMovimientos(); // LÍNEA CLAVE AGREGADA
+        cargarDashboard();
+
+    } catch (error) {
+        console.error('Error eliminando producto:', error);
+        mostrarToast('Error al eliminar producto', 'error');
+    }
+}
+
+// ====================== FUNCIONES DE UTILIDAD ======================
+
+// Hacer petición a la API
+async function hacerPeticion(endpoint, method = 'GET', data = null) {
+    mostrarLoading(true);
+    try {
+        const config = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        };
+
+        if (data) {
+            config.body = JSON.stringify(data);
+        }
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.message || 'Error en la petición');
+        }
+
+        return result;
+    } finally {
+        mostrarLoading(false);
+    }
+}
+
+function mostrarLoading(show) {
+    const loading = document.getElementById('loading');
+    if (show) {
+        loading.classList.remove('d-none');
+    } else {
+        loading.classList.add('d-none');
+    }
+}
+
+function mostrarToast(mensaje, tipo) {
+    const toastContainer = document.getElementById('toast-container');
+    const toastId = 'toast-' + Date.now();
+    const bgClass = tipo === 'success' ? 'bg-success' : tipo === 'error' ? 'bg-danger' : 'bg-info';
+
+    const toastHTML = `
+        <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${mensaje}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+
+    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+    toast.show();
+
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+</script>
+
+</body>
+</html>

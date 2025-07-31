@@ -1,0 +1,19 @@
+# Node.js
+node_modules/
+.env
+npm-debug.log
+yarn-error.log
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# IDEs
+.vscode/
+
+# PostgreSQL specific (if you have local DB files, which usually you don't commit)
+*.sqlc.json
+.pgrc
